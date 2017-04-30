@@ -17,7 +17,7 @@ QStringList params(const QString &str)
     return offset;
 }
 
-void create()
+void newuser()
 {
     QString hot1,hot2;
     xsConsole() << "Enter new password -> ";
@@ -47,10 +47,36 @@ void join()
     do {
     if(lib->iHit > lib->iMaxHit)
         return;
-    xsConsole() << "Enter new password (" << QString::number(lib->iHit) << "/" << QString::number(lib->iMaxHit) << ") -> ";
+    xsConsole() << "Enter your password (" << QString::number(lib->iHit) << "/" << QString::number(lib->iMaxHit) << ") -> ";
     passwd = xsConsole::ReadPasswd();
     } while(lib->userJoin(passwd) == FAIL);
     xsConsole() << "Welcome " << GETUSER << "\n";
+}
+
+void create(const QStringList &in)
+{
+    QString table;
+
+    if(in.size() == 2)
+        table = in.value(1);
+    else
+    {
+        xsConsole() << "New table name ->";
+        xsConsole() >> table;
+    }
+
+    QString field;
+    QStringList fieldlist;
+
+    while(true)
+    {
+        xsConsole() << "New field name (just enter to stop) ->";
+        xsConsole() >> field;
+        if(field == "")
+            break;
+        fieldlist.append(field.trimmed());
+    }
+    lib->tableCreate(table, fieldlist);
 }
 
 void use(const QStringList &in)
@@ -74,7 +100,7 @@ void get(const QStringList &in)
 int main(int argc, char *argv[])
 {
     lib = new xsPasswd();
-    join();
+    lib->userExists(PWFILE) ? join() : newuser();
 
     while(!strBuffer.startsWith("quit", Qt::CaseInsensitive))
     {
@@ -89,6 +115,8 @@ int main(int argc, char *argv[])
             add(args);
         if(strCmd.compare("get",Qt::CaseInsensitive) == 0)
             get(args);
+        if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
+            create(args);
         //xsConsole() << usage();
 
     }
