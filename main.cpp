@@ -90,6 +90,13 @@ void login(const QString &filepw)
     }
 }
 
+void list()
+{
+    QStringList out = lib->tableList();
+    for(int i = 0; i < out.count(); i++)
+        xsConsole() << out.at(i) << endl;
+}
+
 int main(int argc, char *argv[])
 {
     lib = new xsPasswd();
@@ -108,6 +115,8 @@ int main(int argc, char *argv[])
             get(args);
         if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
             create(args);
+        if(strCmd.compare("list", Qt::CaseInsensitive) == 0)
+            list();
         //xsConsole() << usage();
 
     }
