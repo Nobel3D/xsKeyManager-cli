@@ -50,14 +50,20 @@ void use(const QStringList &in)
 void add(const QStringList &in)
 {
     QStringList out = in;
-    lib->dataAdd(out);
-    xsConsole() << lib->strStatus;
+    if(!lib->dataAdd(out))
+        xsConsole() << lib->strStatus;
 }
 void get(const QStringList &in)
 {
     QStringList out = lib->dataGet(in);
     for(int i = 0; i < out.size(); i++)
         xsConsole() << out.at(i) << endl;
+}
+
+void update(const QStringList &in)
+{
+    if(!lib->dataUpdate(in))
+        xsConsole() << "Value doesn't exist!" << endl << lib->strStatus << endl;
 }
 
 void login(const QString &filepw)
@@ -113,6 +119,8 @@ int main(int argc, char *argv[])
             add(args);
         if(strCmd.compare("get",Qt::CaseInsensitive) == 0)
             get(args);
+        if(strCmd.compare("update",Qt::CaseInsensitive) == 0)
+            update(args);
         if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
             create(args);
         if(strCmd.compare("list", Qt::CaseInsensitive) == 0)
