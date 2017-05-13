@@ -66,6 +66,11 @@ void update(const QStringList &in)
         xsConsole() << "Value doesn't exist!" << endl << lib->strStatus << endl;
 }
 
+void gen(const QStringList &in)
+{
+    xsConsole() << lib->generatePassword(in) << endl;
+}
+
 void login(const QString &filepw)
 {
     if(lib->loadPassword(filepw) == OK)
@@ -123,6 +128,8 @@ int main(int argc, char *argv[])
             update(args);
         if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
             create(args);
+        if(strCmd.compare("gen",Qt::CaseInsensitive) == 0)
+            gen(args);
         if(strCmd.compare("list", Qt::CaseInsensitive) == 0)
             list();
         //xsConsole() << usage();
