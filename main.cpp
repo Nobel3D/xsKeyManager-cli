@@ -76,17 +76,9 @@ void login(const QString &filepw)
     if(lib->loadPassword(filepw))
     {
         do {
-<<<<<<< HEAD
-            if(lib->password->getMaxHit() < lib->password->getHit())
-                exit(0);
-            xsConsole() << "(" << QString::number(lib->password->getHit()) << "/" << QString::number(lib->password->getMaxHit()) <<  ") Enter your password -> ";
-        } while(lib->userJoin(xsConsole::ReadPasswd(true)) == FAIL);
-        xsConsole() << "Welcome " << GETUSER << "\n";
-=======
             xsConsole() << "(" << QString::number(lib->password->getHit()) << "/" << QString::number(lib->password->getMaxHit()) <<  ") Enter your password -> ";
         } while(!lib->userJoin(xsConsole::ReadPasswd(true)));
         xsConsole() << "Welcome " << GETUSER << endl;
->>>>>>> bb6b66a75f656320d5b38c8a3981c31f8383220e
     }
     else
     {
