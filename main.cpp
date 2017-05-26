@@ -78,7 +78,7 @@ void login(const QString &filepw)
         do {
             if(lib->password->getMaxHit() < lib->password->getHit())
                 exit(0);
-            xsConsole() << "(" << QString::number(lib->password->getMaxHit()) << "/" << QString::number(lib->password->getHit()) <<  ") Enter your password -> ";
+            xsConsole() << "(" << QString::number(lib->password->getHit()) << "/" << QString::number(lib->password->getMaxHit()) <<  ") Enter your password -> ";
         } while(lib->userJoin(xsConsole::ReadPasswd(true)) == FAIL);
         xsConsole() << "Welcome " << GETUSER << "\n";
     }
@@ -108,31 +108,60 @@ void list()
         xsConsole() << out.at(i) << endl;
 }
 
+void field()
+{
+    if(!lib->tableActive())
+    {
+        xsConsole() << "None table is selected!" << endl;
+        return;
+    }
+    QStringList out = lib->tableField();
+    for(int i = 0; i < out.count(); i++)
+        xsConsole() << out.at(i) << endl;
+}
+
+void usage()
+{
+    xsConsole()
+           << "gen <length> [setting]" << endl
+           << "use <table-name>" << endl
+           << "list" << endl
+           << "field" << endl
+           << "add <value1> <value2> ..." << endl
+           << "get <field> <value>" << endl
+           << "update <field> <oldvalue> <newvalue>" << endl;
+}
+
 int main(int argc, char *argv[])
 {
     lib = new xsPasswd();
     login(PWFILE);
 
-    while(!strCmd.startsWith("quit", Qt::CaseInsensitive))
+    while(true)
     {
         args = params(xsConsole::Shell(GETUSER, lib->database->getTable()));
         strCmd = args.value(0);
 
         if(strCmd.compare("use",Qt::CaseInsensitive) == 0)
             use(args);
-        if(strCmd.compare("add",Qt::CaseInsensitive) == 0)
+        else if(strCmd.compare("add",Qt::CaseInsensitive) == 0)
             add(args);
-        if(strCmd.compare("get",Qt::CaseInsensitive) == 0)
+        else if(strCmd.compare("get",Qt::CaseInsensitive) == 0)
             get(args);
-        if(strCmd.compare("update",Qt::CaseInsensitive) == 0)
+        else if(strCmd.compare("update",Qt::CaseInsensitive) == 0)
             update(args);
-        if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
+        else if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
             create(args);
-        if(strCmd.compare("gen",Qt::CaseInsensitive) == 0)
+        else if(strCmd.compare("gen",Qt::CaseInsensitive) == 0)
             gen(args);
-        if(strCmd.compare("list", Qt::CaseInsensitive) == 0)
+        else if(strCmd.compare("list", Qt::CaseInsensitive) == 0)
             list();
-        //xsConsole() << usage();
+        else if(strCmd.compare("field",Qt::CaseInsensitive) == 0)
+            field();
+        else if(strCmd.compare("quit", Qt::CaseInsensitive) == 0)
+            break;
+        else
+            usage();
 
     }
     xsConsole() << "BYE!\n";
