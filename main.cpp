@@ -41,7 +41,7 @@ void create(const QStringList &in)
 
 void use(const QStringList &in)
 {
-    if(lib->tableUse(in.value(1)) == FAIL)
+    if(!lib->tableUse(in.value(1)))
         xsConsole() << "Impossible to find table " << in.value(1) << endl;
     else
         xsConsole() << "Using table " << in.value(1) << endl;
@@ -73,27 +73,33 @@ void gen(const QStringList &in)
 
 void login(const QString &filepw)
 {
-    if(lib->loadPassword(filepw) == OK)
+    if(lib->loadPassword(filepw))
     {
         do {
+<<<<<<< HEAD
             if(lib->password->getMaxHit() < lib->password->getHit())
                 exit(0);
             xsConsole() << "(" << QString::number(lib->password->getHit()) << "/" << QString::number(lib->password->getMaxHit()) <<  ") Enter your password -> ";
         } while(lib->userJoin(xsConsole::ReadPasswd(true)) == FAIL);
         xsConsole() << "Welcome " << GETUSER << "\n";
+=======
+            xsConsole() << "(" << QString::number(lib->password->getHit()) << "/" << QString::number(lib->password->getMaxHit()) <<  ") Enter your password -> ";
+        } while(!lib->userJoin(xsConsole::ReadPasswd(true)));
+        xsConsole() << "Welcome " << GETUSER << endl;
+>>>>>>> bb6b66a75f656320d5b38c8a3981c31f8383220e
     }
     else
     {
         xsConsole() << "Enter new password -> ";
         xsPassword hot = xsConsole::ReadPasswd();
         xsConsole() << "Repeat your password -> ";
-        if(hot.Check(xsConsole::ReadPasswd()) == FAIL)
+        if(!hot.Check(xsConsole::ReadPasswd()))
         {
             xsConsole() << "Password mismatch!\n";
             exit(0);
         }
 
-        if(lib->userCreate(hot, filepw) == FAIL)
+        if(!lib->userCreate(hot, filepw))
             xsConsole() << lib->strStatus;
 
         xsConsole() << "Creation successful on your home directory!\n";
