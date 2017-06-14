@@ -55,7 +55,21 @@ void add(const QStringList &in)
 }
 void get(const QStringList &in)
 {
-    QStringList out = lib->dataGet(in);
+    QStringList out;
+    switch (in.size()) {
+    case 1:
+        out = lib->dataGet();
+        break;
+    case 2:
+        out = lib->dataGet(in.at(1));
+        break;
+    case 3:
+        out = lib->dataGet(in.at(1), in.at(2));
+        break;
+    default:
+        xsConsole() << "Malformed parameters!" << endl;
+        return;
+    }
     for(int i = 0; i < out.size(); i++)
         xsConsole() << out.at(i) << endl;
 }
