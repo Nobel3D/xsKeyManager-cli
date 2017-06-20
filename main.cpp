@@ -1,6 +1,8 @@
 #include <xslib/xslib.h>
 #include <libxspasswd/xspasswd.h>
 
+#define ISACTIVE if(!lib->tableActive()) { xsConsole() << "None table is selected!" << endl; return; }
+
 QString strCmd;
 QStringList args;
 xsPasswd* lib = nullptr;
@@ -49,19 +51,25 @@ void use(const QStringList &in)
 
 void add(const QStringList &in)
 {
+    ISACTIVE;
     QStringList out = in;
     if(!lib->dataAdd(out))
         xsConsole() << lib->strStatus;
 }
 void get(const QStringList &in)
 {
+    ISACTIVE;
     QStringList out;
+    QStringList fields = lib->tableField();
+    bool ok;
+    int row = in.at(1).toInt(&ok);
     switch (in.size()) {
-    case 1:
-        out = lib->dataGet();
-        break;
     case 2:
-        out = lib->dataGet(in.at(1));
+        row = in.at(1).toInt(&ok);
+        if(!ok)
+            out = lib->dataGet(in.at(1));
+        else
+            out = lib->dataGet(row);
         break;
     case 3:
         out = lib->dataGet(in.at(1), in.at(2));
@@ -76,6 +84,7 @@ void get(const QStringList &in)
 
 void update(const QStringList &in)
 {
+    ISACTIVE;
     if(!lib->dataUpdate(in))
         xsConsole() << "Value doesn't exist!" << endl << lib->strStatus << endl;
 }
@@ -122,11 +131,7 @@ void list()
 
 void field()
 {
-    if(!lib->tableActive())
-    {
-        xsConsole() << "None table is selected!" << endl;
-        return;
-    }
+    ISACTIVE;
     QStringList out = lib->tableField();
     for(int i = 0; i < out.count(); i++)
         xsConsole() << out.at(i) << endl;
