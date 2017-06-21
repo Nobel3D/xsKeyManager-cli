@@ -60,7 +60,6 @@ void get(const QStringList &in)
 {
     ISACTIVE;
     QStringList out;
-    QStringList fields = lib->tableField();
     bool ok;
     int row = in.at(1).toInt(&ok);
     switch (in.size()) {
@@ -79,7 +78,8 @@ void get(const QStringList &in)
         return;
     }
     for(int i = 0; i < out.size(); i++)
-        xsConsole() << out.at(i) << endl;
+        if(!out.at(i).isEmpty())
+            xsConsole() << out.at(i) << endl;
 }
 
 void update(const QStringList &in)
