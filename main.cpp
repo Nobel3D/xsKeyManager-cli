@@ -2,21 +2,27 @@
 #include <libxspasswd/xspasswd.h>
 
 #define ISACTIVE if(!lib->tableActive()) { xsConsole() << "None table is selected!" << endl; return; }
+#define CHECK_INPUT(expr) { if(expr) { xsConsole() << "Too few arguments in " << __func__ << endl; return; } }
 
 QString strCmd;
 QStringList args;
 xsPasswd* lib = nullptr;
 
-QStringList params(const QString &str)
+QStringList params(const QString &str) //TODO: Move into Shell method in xslib
 {
     QStringList offset = str.split(' ');
     for(int i = 0; i < offset.size(); i++)
-        offset.value(i).trimmed();
+    {
+        offset.at(i).trimmed();
+        if(offset.at(i).isEmpty())
+            offset.removeAt(i--);
+    }
     return offset;
 }
 
 void create(const QStringList &in)
 {
+    CHECK_INPUT(in.size() < 2);
     QString table;
 
     if(in.size() == 2)
@@ -43,10 +49,11 @@ void create(const QStringList &in)
 
 void use(const QStringList &in)
 {
-    if(!lib->tableUse(in.value(1)))
-        xsConsole() << "Impossible to find table " << in.value(1) << endl;
+    CHECK_INPUT(in.size() < 2);
+    if(!lib->tableUse(in.at(1)))
+        xsConsole() << "Impossible to find table " << in.at(1) << endl;
     else
-        xsConsole() << "Using table " << in.value(1) << endl;
+        xsConsole() << "Using table " << in.at(1) << endl;
 }
 
 void add(const QStringList &in)
@@ -59,6 +66,7 @@ void add(const QStringList &in)
 void get(const QStringList &in)
 {
     ISACTIVE;
+    CHECK_INPUT(in.size() < 2);
     QStringList out;
     bool ok;
     int row = in.at(1).toInt(&ok);
@@ -85,12 +93,14 @@ void get(const QStringList &in)
 void update(const QStringList &in)
 {
     ISACTIVE;
-    if(!lib->dataUpdate(in))
+    CHECK_INPUT(in.size() < 4);
+    if(!lib->dataUpdate(in)) //TODO: Check size of input list
         xsConsole() << "Value doesn't exist!" << endl << lib->strStatus << endl;
 }
 
 void gen(const QStringList &in)
 {
+    CHECK_INPUT(in.size() < 2);
     xsConsole() << lib->generatePassword(in) << endl;
 }
 
