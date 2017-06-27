@@ -59,9 +59,30 @@ void use(const QStringList &in)
 void add(const QStringList &in)
 {
     ISACTIVE;
-    QStringList out = in;
-    if(!lib->dataAdd(out))
-        xsConsole() << lib->strStatus;
+    if(in.count() == 1)
+    {
+        QStringList tableFields = lib->tableField();
+        QStringList fields;
+        QString buffer;
+        QStringList values;
+        for(int i = 0; i < tableFields.count(); i++)
+        {
+            xsConsole() << "Insert into field name \"" << tableFields.at(i) << "\" ->";
+            xsConsole() >> buffer;
+            if(buffer != "")
+            {
+                values.append(buffer);
+                fields.append(tableFields.at(i));
+            }
+        }
+        lib->dataAdd(fields, values);
+    }
+    else
+    {
+        QStringList out = in;
+        if(!lib->dataAdd(out))
+            xsConsole() << lib->strStatus;
+    }
 }
 void get(const QStringList &in)
 {
@@ -94,8 +115,33 @@ void update(const QStringList &in)
 {
     ISACTIVE;
     CHECK_INPUT(in.size() < 4);
-    if(!lib->dataUpdate(in)) //TODO: Check size of input list
-        xsConsole() << "Value doesn't exist!" << endl << lib->strStatus << endl;
+    bool isInt = false;
+    int value = in.at(3).toInt(&isInt);
+    if(isInt)
+    {
+        if(!lib->dataUpdate(in.at(1), in.at(2), value))
+            xsConsole() << "Value doesn't exist!" << endl;
+    }
+    else
+    {
+        if(!lib->dataUpdate(in.at(1), in.at(2), in.at(3)))
+            xsConsole() << "Value doesn't exist!" << endl;
+    }
+}
+
+void remove(const QStringList &in)
+{
+    ISACTIVE;
+    CHECK_INPUT(in.size() < 2);
+    bool isInt = false;
+    int index = in.at(1).toInt(&isInt);
+    if(isInt)
+    {
+        if(!lib->dataDelete(index))
+            xsConsole() << "Index doesn't exist!" << endl;
+    }
+    else
+        xsConsole() << "Input index must be a number!" << endl;
 }
 
 void gen(const QStringList &in)
@@ -156,7 +202,8 @@ void usage()
            << "field" << endl
            << "add <value1> <value2> ..." << endl
            << "get <field> <value>" << endl
-           << "update <field> <oldvalue> <newvalue>" << endl;
+           << "update <field> <oldvalue> <newvalue>" << endl
+           << "remove <index>" << endl;
 }
 
 int main(int argc, char *argv[])
@@ -177,6 +224,8 @@ int main(int argc, char *argv[])
             get(args);
         else if(strCmd.compare("update",Qt::CaseInsensitive) == 0)
             update(args);
+        else if(strCmd.compare("remove", Qt::CaseInsensitive) == 0)
+            remove(args);
         else if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
             create(args);
         else if(strCmd.compare("gen",Qt::CaseInsensitive) == 0)
