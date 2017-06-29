@@ -193,6 +193,29 @@ void field()
         xsConsole() << out.at(i) << endl;
 }
 
+void import(const QStringList &in)
+{
+    CHECK_INPUT(in.size() < 4);
+    if(in.at(1).compare("table", Qt::CaseInsensitive) == 0)
+        lib->importTable(in.at(2), in.at(3));
+    else if(in.at(1).compare("database", Qt::CaseInsensitive) == 0)
+        lib->importDatabase(in.at(2), in.at(3));
+}
+
+void _export(const QStringList &in)
+{
+    CHECK_INPUT(in.size() < 3);
+    if(in.at(1).compare("table", Qt::CaseInsensitive) == 0)
+    {
+        ISACTIVE;
+        lib->exportTable(in.at(2));
+    }
+    else if(in.at(1).compare("database", Qt::CaseInsensitive) == 0)
+    {
+        lib->exportDatabase(in.at(2));
+    }
+}
+
 void usage()
 {
     xsConsole()
@@ -224,7 +247,7 @@ int main(int argc, char *argv[])
             get(args);
         else if(strCmd.compare("update",Qt::CaseInsensitive) == 0)
             update(args);
-        else if(strCmd.compare("remove", Qt::CaseInsensitive) == 0)
+        else if(strCmd.compare("remove",Qt::CaseInsensitive) == 0)
             remove(args);
         else if(strCmd.compare("create",Qt::CaseInsensitive) == 0)
             create(args);
@@ -234,6 +257,10 @@ int main(int argc, char *argv[])
             list();
         else if(strCmd.compare("field",Qt::CaseInsensitive) == 0)
             field();
+        else if(strCmd.compare("import",Qt::CaseInsensitive) == 0)
+            import(args);
+        else if(strCmd.compare("export",Qt::CaseInsensitive) == 0)
+            _export(args);
         else if(strCmd.compare("quit", Qt::CaseInsensitive) == 0)
             break;
         else
