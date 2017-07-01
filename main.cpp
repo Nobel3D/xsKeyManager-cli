@@ -195,11 +195,19 @@ void field()
 
 void import(const QStringList &in)
 {
-    CHECK_INPUT(in.size() < 4);
     if(in.at(1).compare("table", Qt::CaseInsensitive) == 0)
+    {
+        CHECK_INPUT(in.size() < 4);
         lib->importTable(in.at(2), in.at(3));
+    }
     else if(in.at(1).compare("database", Qt::CaseInsensitive) == 0)
-        lib->importDatabase(in.at(2), in.at(3));
+    {
+        CHECK_INPUT(in.size() < 3);
+        QFileInfoList list;
+        for(int i = 0; i < in.size() - 2; i++)
+            list.append(QFileInfo(in.at(i + 2)));
+        lib->importDatabase(list);
+    }
 }
 
 void _export(const QStringList &in)
