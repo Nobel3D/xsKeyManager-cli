@@ -1,24 +1,13 @@
 #include <xslib/xslib.h>
-#include <libxspasswd/xspasswd.h>
+#include <libStronghold/stronghold.h>
 
 #define ISACTIVE if(!lib->tableActive()) { xsConsole() << "None table is selected!" << endl; return; }
 #define CHECK_INPUT(expr) { if(expr) { xsConsole() << "Too few arguments in " << __func__ << endl; return; } }
 
 QString strCmd;
 QStringList args;
-xsPasswd* lib = nullptr;
+Stronghold* lib = nullptr;
 
-QStringList params(const QString &str) //TODO: Move into Shell method in xslib
-{
-    QStringList offset = str.split(' ');
-    for(int i = 0; i < offset.size(); i++)
-    {
-        offset.at(i).trimmed();
-        if(offset.at(i).isEmpty())
-            offset.removeAt(i--);
-    }
-    return offset;
-}
 
 void create(const QStringList &in)
 {
@@ -150,32 +139,19 @@ void gen(const QStringList &in)
     xsConsole() << lib->generatePassword(in) << endl;
 }
 
-void login(const QString &filepw)
+void login()
 {
-    if(lib->loadPassword(filepw))
+    QString name, password;
+    while(true)
     {
-        do {
-            xsConsole() << "(" << QString::number(lib->password->getHit()) << "/" << QString::number(lib->password->getMaxHit()) <<  ") Enter your password -> ";
-        } while(!lib->userJoin(xsConsole::ReadPasswd(true)));
-        xsConsole() << "Welcome " << GETUSER << endl;
+        xsConsole() << "Enter your user name -> ";
+        xsConsole() >> name;
+        xsConsole() << "Enter your user password -> ";
+        password = xsConsole::ReadPasswd(true).getClearPassword();
+        if(lib->userJoin(name, password))
+            break;
     }
-    else
-    {
-        xsConsole() << "Enter new password -> ";
-        xsPassword hot = xsConsole::ReadPasswd();
-        xsConsole() << "Repeat your password -> ";
-        if(!hot.Check(xsConsole::ReadPasswd()))
-        {
-            xsConsole() << "Password mismatch!\n";
-            exit(0);
-        }
-
-        if(!lib->userCreate(hot, filepw))
-            xsConsole() << lib->strStatus;
-
-        xsConsole() << "Creation successful on your home directory!\n";
-        login(filepw);
-    }
+    xsConsole() << "Welcome " << name << endl;
 }
 
 void list()
@@ -224,6 +200,33 @@ void _export(const QStringList &in)
     }
 }
 
+void admin(const QStringList &in)
+{
+    CHECK_INPUT(in.size() < 3);
+    if(in.at(1).compare("add", Qt::CaseInsensitive) == 0)
+    {
+        QString name, database;
+        while(true)
+        {
+            xsConsole() << "Enter new user name ->";
+            xsConsole() >> name;
+            xsConsole() << "Enter new password -> ";
+            xsPassword hot = xsConsole::ReadPasswd();
+            xsConsole() << "Repeat your password -> ";
+            if(!hot.Check(xsConsole::ReadPasswd()))
+                xsConsole() << "Password mismatch!\n";
+            else
+            {
+                xsConsole() << "Enter new database path -> ";
+                xsConsole() >> database;
+                if(lib->userCreate(name, hot, database))
+                   break;
+            }
+        }
+        xsConsole() << "Creation successful on " << database << endl;
+    }
+}
+
 void usage()
 {
     xsConsole()
@@ -232,19 +235,21 @@ void usage()
            << "list" << endl
            << "field" << endl
            << "add <value1> <value2> ..." << endl
-           << "get <field> <value>" << endl
+           << "get [field <value>/<index>]" << endl
            << "update <field> <oldvalue> <newvalue>" << endl
-           << "remove <index>" << endl;
+           << "remove <index>" << endl
+           << "export [table/database] <path>" << endl
+           << "import [table <newname>/database] <path>" << endl;
 }
 
 int main(int argc, char *argv[])
 {
-    lib = new xsPasswd();
-    login(PWFILE);
+    lib = new Stronghold(LOGINFILE);
+    login();
 
     while(true)
     {
-        args = params(xsConsole::Shell(GETUSER, lib->database->getTable()));
+        args = xsConsole::Shell(GETUSER, lib->database->getTable());
         strCmd = args.value(0);
 
         if(strCmd.compare("use",Qt::CaseInsensitive) == 0)
@@ -269,6 +274,8 @@ int main(int argc, char *argv[])
             import(args);
         else if(strCmd.compare("export",Qt::CaseInsensitive) == 0)
             _export(args);
+        else if(strCmd.compare("admin", Qt::CaseInsensitive) == 0)
+            admin(args);
         else if(strCmd.compare("quit", Qt::CaseInsensitive) == 0)
             break;
         else

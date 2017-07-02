@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mkdir /usr/share/xsoftware
+mkdir /usr/share/xsoftware/Stronghold
+chown -R $1:$1 /usr/share/xsoftware

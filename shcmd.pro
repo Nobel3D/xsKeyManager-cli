@@ -5,7 +5,7 @@ QT -= gui
 
 CONFIG += c++11
 
-TARGET = xspasswd
+TARGET = stronghold
 CONFIG += console
 CONFIG -= app_bundle
 
@@ -23,6 +23,6 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
-win32:CONFIG(release, debug|release): LIBS += -L/usr/lib/release/ -lxs -lxspasswd
-else:win32:CONFIG(debug, debug|release): LIBS += -L/usr/lib/debug/ -lxs -lxspasswd
-else:unix: LIBS += -L/usr/lib/ -lxs -lxspasswd
+win32:CONFIG(release, debug|release): LIBS += -L/usr/lib/release/ -lxs -lstronghold
+else:win32:CONFIG(debug, debug|release): LIBS += -L/usr/lib/debug/ -lxs -lstronghold
+else:unix: LIBS += -L/usr/lib/ -lxs -lstronghold
