@@ -2,4 +2,11 @@
 
 mkdir /usr/share/xsoftware
 mkdir /usr/share/xsoftware/Stronghold
-chown -R $1:$1 /usr/share/xsoftware
+chmod -R 777 /usr/share/xsoftware
+
+sqlite3 /usr/share/xsoftware/Stronghold/Stronghold.db << EOF
+
+CREATE TABLE stronghold ( id INTEGER PRIMARY KEY, name TEXT, password TEXT, database TEXT, level INTEGER );
+INSERT INTO stronghold ( name, password, database, level ) VALUES ( "root", "2a37988472fca900e40a39401b2ad8661ce4758cd2b7dc9e2b421de0ee27d15b194837779e2a312f0236f74c6792bf1adca8983fd35f2566a451b77d70cf6e21", "~/default.db", 100);
+
+EOF

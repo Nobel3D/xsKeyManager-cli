@@ -1,12 +1,13 @@
 #include <xslib/xslib.h>
 #include <libStronghold/stronghold.h>
 
-#define ISACTIVE if(!lib->tableActive()) { xsConsole() << "None table is selected!" << endl; return; }
+#define ISACTIVE if(pem->tableActive().isEmpty()) { xsConsole() << "None table is selected!" << endl; return; }
 #define CHECK_INPUT(expr) { if(expr) { xsConsole() << "Too few arguments in " << __func__ << endl; return; } }
 
 QString strCmd;
 QStringList args;
-Stronghold* lib = nullptr;
+PEM* pem = nullptr;
+SUM* sum = nullptr;
 
 
 void create(const QStringList &in)
@@ -33,13 +34,13 @@ void create(const QStringList &in)
             break;
         fieldlist.append(field.trimmed());
     }
-    lib->tableCreate(table, fieldlist);
+    pem->tableCreate(table, fieldlist);
 }
 
 void use(const QStringList &in)
 {
     CHECK_INPUT(in.size() < 2);
-    if(!lib->tableUse(in.at(1)))
+    if(!pem->tableUse(in.at(1)))
         xsConsole() << "Impossible to find table " << in.at(1) << endl;
     else
         xsConsole() << "Using table " << in.at(1) << endl;
@@ -50,7 +51,7 @@ void add(const QStringList &in)
     ISACTIVE;
     if(in.count() == 1)
     {
-        QStringList tableFields = lib->tableField();
+        QStringList tableFields = pem->tableField();
         QStringList fields;
         QString buffer;
         QStringList values;
@@ -64,13 +65,13 @@ void add(const QStringList &in)
                 fields.append(tableFields.at(i));
             }
         }
-        lib->dataAdd(fields, values);
+        pem->add(fields, values);
     }
     else
     {
         QStringList out = in;
-        if(!lib->dataAdd(out))
-            xsConsole() << lib->strStatus;
+        if(!pem->add(out))
+            xsConsole() << "Impossible to add data!";
     }
 }
 void get(const QStringList &in)
@@ -84,12 +85,12 @@ void get(const QStringList &in)
     case 2:
         row = in.at(1).toInt(&ok);
         if(!ok)
-            out = lib->dataGet(in.at(1));
+            out = pem->get(in.at(1));
         else
-            out = lib->dataGet(row);
+            out = pem->get(row);
         break;
     case 3:
-        out = lib->dataGet(in.at(1), in.at(2));
+        out = pem->get(in.at(1), in.at(2));
         break;
     default:
         xsConsole() << "Malformed parameters!" << endl;
@@ -108,12 +109,12 @@ void update(const QStringList &in)
     int value = in.at(3).toInt(&isInt);
     if(isInt)
     {
-        if(!lib->dataUpdate(in.at(1), in.at(2), value))
+        if(!pem->update(in.at(1), in.at(2), value))
             xsConsole() << "Value doesn't exist!" << endl;
     }
     else
     {
-        if(!lib->dataUpdate(in.at(1), in.at(2), in.at(3)))
+        if(!pem->update(in.at(1), in.at(2), in.at(3)))
             xsConsole() << "Value doesn't exist!" << endl;
     }
 }
@@ -126,7 +127,7 @@ void remove(const QStringList &in)
     int index = in.at(1).toInt(&isInt);
     if(isInt)
     {
-        if(!lib->dataDelete(index))
+        if(!pem->remove(index))
             xsConsole() << "Index doesn't exist!" << endl;
     }
     else
@@ -136,27 +137,29 @@ void remove(const QStringList &in)
 void gen(const QStringList &in)
 {
     CHECK_INPUT(in.size() < 2);
-    xsConsole() << lib->generatePassword(in) << endl;
+    xsConsole() << pem->generatePassword(in) << endl;
 }
 
 void login()
 {
-    QString name, password;
+    QString name;
     while(true)
     {
         xsConsole() << "Enter your user name -> ";
         xsConsole() >> name;
         xsConsole() << "Enter your user password -> ";
-        password = xsConsole::ReadPasswd(true).getClearPassword();
-        if(lib->userJoin(name, password))
+        if(sum->login(name, xsConsole::ReadPasswd(true).getClearPassword()))
+        {
+            pem = new PEM(sum->getUser());
             break;
+        }
     }
     xsConsole() << "Welcome " << name << endl;
 }
 
 void list()
 {
-    QStringList out = lib->tableList();
+    QStringList out = pem->tableList();
     for(int i = 0; i < out.count(); i++)
         xsConsole() << out.at(i) << endl;
 }
@@ -164,7 +167,7 @@ void list()
 void field()
 {
     ISACTIVE;
-    QStringList out = lib->tableField();
+    QStringList out = pem->tableField();
     for(int i = 0; i < out.count(); i++)
         xsConsole() << out.at(i) << endl;
 }
@@ -174,7 +177,7 @@ void import(const QStringList &in)
     if(in.at(1).compare("table", Qt::CaseInsensitive) == 0)
     {
         CHECK_INPUT(in.size() < 4);
-        lib->importTable(in.at(2), in.at(3));
+        pem->importTable(in.at(2), in.at(3));
     }
     else if(in.at(1).compare("database", Qt::CaseInsensitive) == 0)
     {
@@ -182,7 +185,7 @@ void import(const QStringList &in)
         QFileInfoList list;
         for(int i = 0; i < in.size() - 2; i++)
             list.append(QFileInfo(in.at(i + 2)));
-        lib->importDatabase(list);
+        pem->importDatabase(list);
     }
 }
 
@@ -192,11 +195,11 @@ void _export(const QStringList &in)
     if(in.at(1).compare("table", Qt::CaseInsensitive) == 0)
     {
         ISACTIVE;
-        lib->exportTable(in.at(2));
+        pem->exportTable(in.at(2));
     }
     else if(in.at(1).compare("database", Qt::CaseInsensitive) == 0)
     {
-        lib->exportDatabase(in.at(2));
+        pem->exportDatabase(in.at(2));
     }
 }
 
@@ -219,7 +222,7 @@ void admin(const QStringList &in)
             {
                 xsConsole() << "Enter new database path -> ";
                 xsConsole() >> database;
-                if(lib->userCreate(name, hot, database))
+                //if(sum->add(name, hot, database))
                    break;
             }
         }
@@ -244,12 +247,12 @@ void usage()
 
 int main(int argc, char *argv[])
 {
-    lib = new Stronghold(LOGINFILE);
+    sum = new SUM(LOGINFILE);
     login();
 
     while(true)
     {
-        args = xsConsole::Shell(GETUSER, lib->database->getTable());
+        args = xsConsole::Shell(sum->getUser()->getName(), pem->tableActive());
         strCmd = args.value(0);
 
         if(strCmd.compare("use",Qt::CaseInsensitive) == 0)
